@@ -1,8 +1,13 @@
 import torch
 from data_loader import load_and_process_data
 from embedding import SpatialEmbedding
+from temporal_embedding import TemporalEmbedding
 from model.spatial_encoder import SpatialEncoder
 from utils.visualization import plot_global_attention, plot_local_attention, compare_pca
+from utils.visualization import (
+    plot_temporal_embedding_heatmap,
+    plot_temporal_embedding_pca
+)
 
 # ---------- CONFIGURATION ----------
 IMU_PATH = "imu_data.csv"
@@ -20,6 +25,9 @@ X_tensor = torch.tensor(X_data, dtype=torch.float32)
 embedder = SpatialEmbedding(input_dim=6, hidden_dim=HIDDEN_DIM)
 embedded_output = embedder(X_tensor)  # [batch, 200, 64]
 
+temporal_encoder = TemporalEmbedding(input_dim=6, hidden_dim=64, window_size=200)
+temporal_output = temporal_encoder(X_tensor[:10])  # [10, 200, 128]
+
 # ---------- ENCODER STACK ----------
 encoder_stack = SpatialEncoder(dim=HIDDEN_DIM, num_heads=NUM_HEADS, num_layers=NUM_LAYERS)
 stacked_output, attn_logs = encoder_stack(embedded_output[:10], return_attn=True)
@@ -33,3 +41,6 @@ plot_local_attention(attn_logs, layer_idx=5)
 
 # PCA visualization
 compare_pca(embedded_output, stacked_output, title_suffix=f"(Encoder Layers: {NUM_LAYERS})")
+temporal_output = temporal_encoder(X_tensor[:1])
+plot_temporal_embedding_heatmap(temporal_output)
+plot_temporal_embedding_pca(temporal_output)

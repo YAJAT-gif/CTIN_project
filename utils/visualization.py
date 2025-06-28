@@ -59,3 +59,35 @@ def compare_pca(before_tensor, after_tensor, title_suffix=""):
 
     plt.tight_layout()
     plt.show()
+
+def plot_temporal_embedding_heatmap(temporal_output):
+    """
+    Show [features x time] heatmap of the embedding
+    """
+    data = temporal_output[0].detach().cpu().numpy().T  # [128, 200]
+    sns.heatmap(data, cmap="viridis")
+    plt.title("Temporal Embedding Heatmap")
+    plt.xlabel("Timestep")
+    plt.ylabel("Feature Index")
+    plt.tight_layout()
+    plt.show()
+
+def plot_temporal_embedding_pca(temporal_output):
+    """
+    PCA of the embedding sequence: each timestep projected to 2D
+    """
+    from sklearn.decomposition import PCA
+
+    data = temporal_output[0].detach().cpu().numpy()  # [200, 128]
+    pca = PCA(n_components=2)
+    pca_out = pca.fit_transform(data)
+
+    plt.figure(figsize=(6, 5))
+    plt.scatter(pca_out[:, 0], pca_out[:, 1], c=np.arange(200), cmap="viridis")
+    plt.title("PCA of Temporal Embedding")
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.colorbar(label="Timestep")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
