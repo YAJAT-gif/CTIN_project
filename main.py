@@ -3,11 +3,16 @@ from data_loader import load_and_process_data
 from embedding import SpatialEmbedding
 from temporal_embedding import TemporalEmbedding
 from model.spatial_encoder import SpatialEncoder
+from model.temporal_decoder import CTINDecoder
 from utils.visualization import plot_global_attention, plot_local_attention, compare_pca
 from utils.visualization import (
     plot_temporal_embedding_heatmap,
     plot_temporal_embedding_pca
 )
+
+
+from model.output_heads import OutputHeads
+
 
 # ---------- CONFIGURATION ----------
 IMU_PATH = "imu_data.csv"
@@ -31,6 +36,10 @@ temporal_output = temporal_encoder(X_tensor[:10])  # [10, 200, 128]
 # ---------- ENCODER STACK ----------
 encoder_stack = SpatialEncoder(dim=HIDDEN_DIM, num_heads=NUM_HEADS, num_layers=NUM_LAYERS)
 stacked_output, attn_logs = encoder_stack(embedded_output[:10], return_attn=True)
+
+# ---------- DECODER STACK ----------
+decoder = CTINDecoder(input_dim=128, memory_dim=64, num_heads=4, num_layers=6)
+output = decoder(temporal_output[:10], stacked_output[:10])  # → [10, 200, 64]
 
 # ---------- VISUALIZATION ----------
 # Plot attention for Layer 1 and Layer 6
