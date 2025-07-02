@@ -1,8 +1,13 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+
 import torch
 import torch.nn as nn
 from embedding import SpatialEmbedding
-from model.temporal_embedding import TemporalEmbedding
-from model.decoder import CTINDecoder
+from temporal_embedding import TemporalEmbedding
+from model.temporal_decoder import CTINDecoder
 from model.output_heads import OutputHeads
 from model.spatial_encoder import SpatialEncoder
 
@@ -14,7 +19,7 @@ class CTINModel(nn.Module):
         self.embedding = SpatialEmbedding(input_dim=input_dim, hidden_dim=hidden_dim)
         self.encoder = SpatialEncoder(dim=hidden_dim, num_heads=num_heads, num_layers=num_encoder_layers)
         self.temporal = TemporalEmbedding(input_dim=input_dim, hidden_dim=hidden_dim)  # uses raw IMU
-        self.decoder = CTINDecoder(hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_decoder_layers)
+        self.decoder = CTINDecoder(memory_dim=hidden_dim, num_heads=num_heads, num_layers=num_decoder_layers)
         self.output_heads = OutputHeads(hidden_dim=hidden_dim)
 
     def forward(self, imu_tensor):
