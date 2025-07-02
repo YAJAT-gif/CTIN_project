@@ -11,20 +11,23 @@ class OutputHeads(nn.Module):
             nn.Linear(hidden_dim, 2)
         )
 
-        # Covariance head: Predicts [σ_xx, σ_yy, σ_xy]
+        # Covariance head: Predicts [log(σ_xx), log(σ_yy)]
         self.cov_head = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, 3)
+            nn.Linear(hidden_dim, 2)  # Diagonal only
         )
+
+        # Optional: initialize biases to small positive log-variances
+        nn.init.constant_(self.cov_head[-1].bias, 0.0)
 
     def forward(self, h):
         """
         Args:
-            h (Tensor): [B, T, D] → decoder output
+            h (Tensor): [B, T, D] – decoder output
         Returns:
             vel: [B, T, 2]
-            cov: [B, T, 3]
+            cov: [B, T, 2] – log variances
         """
         vel = self.vel_head(h)
         cov = self.cov_head(h)
