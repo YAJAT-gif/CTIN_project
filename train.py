@@ -41,8 +41,8 @@ for i in range(len(imu_nav_data) - window_size + 1):
 X_tensor = torch.tensor(np.array(X_windows), dtype=torch.float32)
 Y_tensor = torch.tensor(np.array(Y_windows), dtype=torch.float32)
 
-X_tensor = X_tensor[:200]
-Y_tensor = Y_tensor[:200]
+X_tensor = X_tensor[:1000]
+Y_tensor = Y_tensor[:1000]
 
 
 # Dataset and loaders
