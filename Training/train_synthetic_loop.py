@@ -9,9 +9,8 @@ from ctin_project.utils.path_utils import get_dataset_path
 
 
 imu_path = get_dataset_path("imu_ctin.csv")
-print("Resolved IMU path:", imu_path)
+gt_path = get_dataset_path("gt_vel_ctin.csv")
 
-assert os.path.exists(imu_path), "IMU CSV not found!"
 # === Load synthetic loop dataset ===
 # X_tensor = torch.load("X_circuit.pt")  # [N, 200, 6]
 # Y_tensor = torch.load("Y_circuit.pt")  # [N, 200, 2]
@@ -20,8 +19,8 @@ import numpy as np
 import pandas as pd
 
 # === Load CSVs ===
-imu_data = pd.read_csv("imu_ctin.csv", header=None).values  # [T, 6]
-vel_data = pd.read_csv("gt_vel_ctin.csv", header=None).values  # [T, 2]
+imu_data = pd.read_csv(imu_path, header=None).values  # [T, 6]
+vel_data = pd.read_csv(gt_path, header=None).values  # [T, 2]
 
 
 # Normalize IMU input (z-score)
