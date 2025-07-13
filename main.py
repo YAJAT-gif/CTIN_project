@@ -15,8 +15,8 @@ from model.output_heads import OutputHeads
 
 
 # ---------- CONFIGURATION ----------
-IMU_PATH = "imu_data.csv"
-GT_PATH = "gt_data.csv"
+IMU_PATH = "Datasets/imu_data.csv"
+GT_PATH = "Datasets/gt_data.csv"
 WINDOW_SIZE = 200
 HIDDEN_DIM = 64
 NUM_HEADS = 4

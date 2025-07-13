@@ -1,5 +1,5 @@
 import torch.nn as nn
-from attention_blocks.spatial_encoder_block import SpatialEncoderBlock
+from ctin_project.attention_blocks.spatial_encoder_block import SpatialEncoderBlock
 
 class SpatialEncoder(nn.Module):
     def __init__(self, dim=64, num_heads=4, num_layers=6):

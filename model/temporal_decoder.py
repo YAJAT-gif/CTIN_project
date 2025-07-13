@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from attention_blocks.temporal_decoder_block import CTINDecoderLayer
+from ctin_project.attention_blocks.temporal_decoder_block import CTINDecoderLayer
 
 
 class CTINDecoder(nn.Module):

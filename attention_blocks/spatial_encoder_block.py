@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from attention_blocks.local_attention import LocalSelfAttentionBlock
-from attention_blocks.global_attention import GlobalSelfAttentionBlock
+from ctin_project.attention_blocks.local_attention import LocalSelfAttentionBlock
+from ctin_project.attention_blocks.global_attention import GlobalSelfAttentionBlock
 
 class SpatialEncoderBlock(nn.Module):
     def __init__(self, dim, num_heads=4):

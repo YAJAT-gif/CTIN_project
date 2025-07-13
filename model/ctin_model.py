@@ -5,11 +5,12 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import torch
 import torch.nn as nn
-from embedding import SpatialEmbedding
-from temporal_embedding import TemporalEmbedding
-from model.temporal_decoder import CTINDecoder
-from model.output_heads import OutputHeads
-from model.spatial_encoder import SpatialEncoder
+
+from ctin_project.embedding import SpatialEmbedding
+from ctin_project.temporal_embedding import TemporalEmbedding
+from ctin_project.model.temporal_decoder import CTINDecoder
+from ctin_project.model.output_heads import OutputHeads
+from ctin_project.model.spatial_encoder import SpatialEncoder
 
 
 class CTINModel(nn.Module):
