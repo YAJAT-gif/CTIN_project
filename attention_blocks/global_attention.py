@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import math
 
 class GlobalSelfAttentionBlock(nn.Module):
-    def __init__(self, dim, num_heads=4):
+    def __init__(self, dim, num_heads=16):
         super().__init__()
         assert dim % num_heads == 0, "dim must be divisible by num_heads"
 

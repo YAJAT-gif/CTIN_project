@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SpatialEmbedding(nn.Module):
-    def __init__(self, input_dim=6, hidden_dim=64):
+    def __init__(self, input_dim=6, hidden_dim=256):
         super().__init__()
         self.conv1d = nn.Conv1d(in_channels=input_dim, out_channels=hidden_dim, kernel_size=3, padding=1)
         self.bn = nn.BatchNorm1d(hidden_dim)

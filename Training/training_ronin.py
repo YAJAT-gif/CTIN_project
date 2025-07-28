@@ -9,13 +9,13 @@ from ctin_project.loss.multitask_loss import MultiTaskLoss
 from ctin_project.utils.path_utils import get_dataset_path
 
 # === Config ===
-ronin_csv = "output.csv"
+ronin_csv = "../ctin_combined_dataset.csv"
 window_size = 200
-stride = 15
+stride = 20
 batch_size = 16
 num_epochs = 25
-lr = 8e-4
-vel_scale = 5.0  # Adjust based on magnitude in RoNIN data
+lr = 3e-4
+vel_scale = 1.0  # Adjust based on magnitude in RoNIN data
 
 # === Load RoNIN CSV ===
 df = pd.read_csv(ronin_csv)
