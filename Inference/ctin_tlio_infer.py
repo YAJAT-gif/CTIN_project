@@ -11,7 +11,7 @@ model_path = "../ctin_model_tlio.pth"
 window_size = 200
 stride = 10
 batch_size = 8
-dt = 0.05  # 10Hz, adjust if your data is 100Hz use 0.01
+dt = 0.05
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # === Load and normalize IMU ===
