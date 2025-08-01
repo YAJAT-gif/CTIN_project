@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 from sklearn.metrics import mean_squared_error
-from ctin_project.model.ctin_model import CTINModel
+from ctin_project.model.ctin_model_gru import CTINModel
 
 # === Config ===
-csv_path = "ctin_dataset_137102747096458.csv"
-model_path = "../ctin_model_tlio.pth"
+csv_path = "ctin_dataset_145820422949970.csv"
+model_path = "../ctin_model_tlio_GRU_highStride.pth"
 window_size = 200
 stride = 10
-batch_size = 8
+batch_size = 64
 dt = 0.05
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

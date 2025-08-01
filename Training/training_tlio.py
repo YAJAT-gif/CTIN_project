@@ -11,10 +11,10 @@ from ctin_project.sequence_window_dataset import SequenceWindowDataset
 csv_dir = "../ctin_csv_output"  # Folder containing all ctin_dataset_*.csv files
 window_size = 200
 stride = 10
-batch_size = 128
-num_epochs = 50
+batch_size = 64
+num_epochs = 25
 learning_rate = 1e-4
-save_path = "../ctin_model_tlio.pth"
+save_path = "../ctin_model_tlio_GRU_highStride.pth"
 
 # Dataset and DataLoader
 dataset = SequenceWindowDataset(csv_dir, window_size=window_size, stride=stride)

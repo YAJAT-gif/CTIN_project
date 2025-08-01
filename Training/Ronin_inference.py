@@ -3,14 +3,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from ctin_project.model.ctin_model import CTINModel
-from ctin_project.utils.path_utils import get_dataset_path
 
-# === Config (match training settings) ===
+# === Config ===
 ronin_csv = "output.csv"
-model_path = "ctin_trained_on_ronin.pth"
+model_path = "ctin_trained_on_ronin_pos.pth"
 window_size = 200
-stride = 20
-vel_scale = 1.0
+stride = 10
 
 # === Load data ===
 df = pd.read_csv(ronin_csv)
@@ -18,59 +16,72 @@ imu_data = df[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']].values
 gt_pos = df[['gt_x', 'gt_y']].values
 timestamps = df['timestamp'].values
 
-# === Normalize IMU (use stats from inference dataset) ===
+# === Normalize IMU ===
 imu_mean = imu_data.mean(axis=0)
 imu_std = imu_data.std(axis=0)
 imu_data = (imu_data - imu_mean) / (imu_std + 1e-6)
 
-# === Windowing ===
-def create_windows(data, window_size, stride):
-    X, indices = [], []
+# === Create normalized windows and save stats ===
+def create_windows(data, targets, window_size, stride):
+    X, origins, stds, indices = [], [], [], []
     for i in range(0, len(data) - window_size + 1, stride):
-        X.append(data[i:i+window_size])
-        indices.append(i)
-    return np.stack(X), np.array(indices)
+        imu_window = data[i:i+window_size]
+        pos_window = targets[i:i+window_size]
 
-X_np, start_indices = create_windows(imu_data, window_size, stride)
+        if imu_window.shape[0] != window_size or pos_window.shape[0] != window_size:
+            continue
+
+        origin = pos_window[0]
+        std = pos_window.std(axis=0) + 1e-6
+        norm_pos = (pos_window - origin) / std
+
+        X.append(imu_window)
+        origins.append(origin)
+        stds.append(std)
+        indices.append(i)
+    return np.stack(X), np.array(origins), np.array(stds), np.array(indices)
+
+X_np, origins, stds, start_indices = create_windows(imu_data, gt_pos, window_size, stride)
 X_tensor = torch.tensor(X_np, dtype=torch.float32)
 
 # === Load model ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = CTINModel().to(device)
+model = CTINModel(output_mode="pos").to(device)
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.eval()
 
-# === Predict velocity windows ===
-all_pred_vel = []
-
+# === Predict ===
+all_pred = []
 with torch.no_grad():
-    for i in range(0, len(X_tensor), 32):  # small batch size to avoid OOM
+    for i in range(0, len(X_tensor), 32):
         X_batch = X_tensor[i:i+32].to(device)
-        pred_vel, _ = model(X_batch)
-        all_pred_vel.append(pred_vel.cpu().numpy())
+        pred_pos, _ = model(X_batch)
+        all_pred.append(pred_pos.cpu().numpy())
 
-pred_vel_windows = np.concatenate(all_pred_vel, axis=0)  # shape: [N, 200, 2]
-pred_vel_windows = pred_vel_windows * vel_scale  # denormalize
+pred_pos_windows = np.concatenate(all_pred, axis=0)  # shape [N, 200, 2]
 
-# === Reconstruct full-resolution velocity via overlap averaging ===
-full_pred_vel = np.zeros((len(imu_data), 2))
+# === Denormalize each predicted window ===
+denorm_windows = []
+for i in range(len(pred_pos_windows)):
+    pred = pred_pos_windows[i]
+    std = stds[i]
+    origin = origins[i]
+    denorm = pred * std + origin
+    denorm_windows.append(denorm)
+pred_pos_windows = np.stack(denorm_windows)  # [N, 200, 2]
+
+# === Reconstruct full trajectory via overlap averaging ===
+full_pred_pos = np.zeros((len(imu_data), 2))
 counts = np.zeros(len(imu_data))
 
 for i, start in enumerate(start_indices):
-    full_pred_vel[start:start+window_size] += pred_vel_windows[i]
+    full_pred_pos[start:start+window_size] += pred_pos_windows[i]
     counts[start:start+window_size] += 1
 
-# Avoid divide by zero
 counts[counts == 0] = 1
-full_pred_vel /= counts[:, None]
+pred_pos = full_pred_pos / counts[:, None]
 
-# === Integrate velocity to get predicted position ===
-dt = float(np.mean(np.diff(timestamps)))  # use mean dt as scalar
-pred_pos = np.cumsum(full_pred_vel * dt, axis=0)
-
-
-
-# ==== Error Metrics ====
+# === Metrics ===
 def compute_ATE(pos_true, pos_pred):
     return np.sqrt(np.mean(np.sum((pos_true - pos_pred)**2, axis=1)))
 
@@ -91,7 +102,7 @@ def compute_D_RTE(pos_true, pos_pred, d=1.0):
         for i in range(t+1, len(pos_true)):
             if np.linalg.norm(pos_true[i] - pos_true[start]) >= d:
                 gt_delta = pos_true[i] - pos_true[start]
-                pred_delta = pos_pred[i] - pos_pred[start]
+                pred_delta = pos_pred[i] - pred_pos[start]
                 errors.append(np.linalg.norm(gt_delta - pred_delta))
                 t = i
                 break
@@ -103,7 +114,8 @@ def compute_PDE(pos_true, pos_pred):
     drift = np.linalg.norm(pos_true[-1] - pos_pred[-1])
     total_len = np.sum(np.linalg.norm(np.diff(pos_true, axis=0), axis=1))
     return drift / total_len
-# ==== Evaluate ====
+
+dt = float(np.mean(np.diff(timestamps)))
 ate = compute_ATE(gt_pos, pred_pos)
 t_rte = compute_T_RTE(gt_pos, pred_pos, dt=dt)
 d_rte = compute_D_RTE(gt_pos, pred_pos)
@@ -114,14 +126,14 @@ print(f"T-RTE: {t_rte:.3f} m")
 print(f"D-RTE: {d_rte:.3f} m")
 print(f"PDE:   {pde:.3f}")
 
-# === Plot results ===
-plt.figure(figsize=(8, 6))
-plt.plot(gt_pos[:, 0], gt_pos[:, 1], label='Ground Truth', alpha=1)
-plt.plot(pred_pos[:, 0], pred_pos[:, 1], label='CTIN Prediction', alpha=1)
-plt.legend()
-plt.title("CTIN Trajectory vs Ground Truth")
+# === Plot ===
+plt.figure(figsize=(10, 6))
+plt.plot(gt_pos[:, 0], gt_pos[:, 1], label='Ground Truth',linewidth=4)
+plt.plot(pred_pos[:, 0], pred_pos[:, 1], label='CTIN Prediction',linestyle='--')
+plt.title("CTIN Trajectory vs Ground Truth (Position Prediction)")
 plt.xlabel("X (m)")
 plt.ylabel("Y (m)")
 plt.axis('equal')
 plt.grid(True)
+plt.legend()
 plt.show()
