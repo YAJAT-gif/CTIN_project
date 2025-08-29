@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 
 from ctin_project.model.ctin_model import CTINModel
 
-
-
 # ==== Config ====
 window_size = 200
 stride = 1
@@ -14,8 +12,8 @@ dt = 1 / 100
 vel_scale = 40.0
 
 # ==== Load IMU and GT Velocity ====
-imu = pd.read_csv("Datasets/imu_ctin.csv", header=None).values.astype(np.float32)  # [T, 6]
-vel_gt = pd.read_csv("Datasets/gt_vel_ctin.csv", header=None).values.astype(np.float32)  # [T, 2]
+imu = pd.read_csv("../Datasets/imu_matlab/imu_ctin_figure8.csv", header=None).values.astype(np.float32)  # [T, 6]
+vel_gt = pd.read_csv("../Datasets/gt_matlab/gt_vel_ctin_figure8.csv", header=None).values.astype(np.float32)  # [T, 2]
 T = imu.shape[0]
 
 # ==== Normalize IMU ====
@@ -32,7 +30,7 @@ X_tensor = torch.tensor(X_win, dtype=torch.float32)
 
 # ==== Load Model ====
 model = CTINModel()
-model.load_state_dict(torch.load("ctin_synthetic_loop_noisy.pth", map_location='cpu'))
+model.load_state_dict(torch.load("ctin_synthetic_loop_noisy_GRU_8.pth", map_location='cpu'))
 model.eval()
 
 # ==== Predict ====
@@ -115,7 +113,7 @@ print(f"D-RTE: {d_rte:.3f} m")
 print(f"PDE:   {pde:.3f}")
 
 # ==== Plot ====
-plt.figure(figsize=(8, 8))
+plt.figure(figsize=(4, 4))
 plt.plot(pos_gt[:, 0], pos_gt[:, 1], label="Ground Truth", linewidth=2)
 plt.plot(pos_pred[:, 0], pos_pred[:, 1], '--', label="Predicted (Fused)", linewidth=2)
 plt.xlabel("X (m)")

@@ -5,16 +5,16 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from ctin_project.model.ctin_model import CTINModel
 from ctin_project.loss.velocity_loss import VelocityOnlyLoss
-from ctin_project.sequence_window_dataset import SequenceWindowDataset
+from ctin_project.sequence_window_dataset_EUROC import SequenceWindowDataset
 
 # Config
-csv_dir = "../ctin_csv_output"  # Folder containing all ctin_dataset_*.csv files
+csv_dir = "../euroc_output"  # Folder containing all ctin_dataset_*.csv files
 window_size = 200
 stride = 10
 batch_size = 64
-num_epochs = 25
+num_epochs = 100
 learning_rate = 1e-4
-save_path = "../ctin_model_tlio_GRU_highStride.pth"
+save_path = "../ctin_model_EUROC_GRU_3D.pth"
 
 # Dataset and DataLoader
 dataset = SequenceWindowDataset(csv_dir, window_size=window_size, stride=stride)

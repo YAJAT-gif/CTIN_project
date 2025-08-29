@@ -28,7 +28,7 @@ class CTINModel(nn.Module):
         self.encoder = SpatialEncoder(dim=hidden_dim, num_heads=num_heads, num_layers=num_encoder_layers)
         self.temporal = TemporalEmbedding(input_dim=input_dim, hidden_dim=hidden_dim)  # uses raw IMU
         self.decoder = CTINDecoder(memory_dim=hidden_dim, num_heads=num_heads, num_layers=num_decoder_layers)
-        self.output_heads = OutputHeads(hidden_dim=hidden_dim, mode=output_mode)  # <-- updated
+        self.output_heads = OutputHeads(hidden_dim=hidden_dim)
 
     def forward(self, imu_tensor):
         """

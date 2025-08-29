@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 
 # === CONFIG ===
-data_root = "local_data_1/tlio_golden"
-train_list_path = "local_data_1/tlio_golden/train_list.txt"
-output_dir = "../ctin_csv_output"
+data_root = "local_data/tlio_golden"
+train_list_path = "local_data/tlio_golden/val_list.txt"
+output_dir = "../ctin_csv_output/validation"
 
 os.makedirs(output_dir, exist_ok=True)
 

@@ -3,7 +3,7 @@ from data_loader import load_and_process_data
 from embedding import SpatialEmbedding
 from temporal_embedding import TemporalEmbedding
 from model.spatial_encoder import SpatialEncoder
-from model.temporal_decoder import CTINDecoder
+from ctin_project.model.temporal_decoder import CTINDecoder
 from utils.visualization import plot_global_attention, plot_local_attention, compare_pca
 from utils.visualization import (
     plot_temporal_embedding_heatmap,
